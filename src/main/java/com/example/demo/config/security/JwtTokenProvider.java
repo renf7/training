@@ -18,7 +18,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.AllArgsConstructor;
 
 @Component
-@AllArgsConstructor
 public class JwtTokenProvider {
     private final UserDetailsService userDetailsService;
 
@@ -28,6 +27,10 @@ public class JwtTokenProvider {
     private Integer validityInMsValue;
 
     private String sekretKey;
+
+    public JwtTokenProvider(UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @PostConstruct
     protected void init() {
