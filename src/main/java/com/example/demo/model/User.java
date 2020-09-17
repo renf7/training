@@ -20,6 +20,7 @@ import lombok.ToString;
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
     private static final long serialVersionUID = -5508780399403497638L;
+    @Column(unique = true)
     private String username;
     private String password;
     @Column
