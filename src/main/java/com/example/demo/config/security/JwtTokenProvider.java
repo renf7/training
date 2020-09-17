@@ -2,10 +2,15 @@ package com.example.demo.config.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+import com.example.demo.model.Role;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +20,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.AllArgsConstructor;
 
 @Component
 public class JwtTokenProvider {
@@ -37,8 +41,13 @@ public class JwtTokenProvider {
         sekretKey = Base64.getEncoder().encodeToString(secretKeyValue.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createToken(String username, List<String> roles) {
+    public String createToken(String username, Collection<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
+        claims.put("roles",
+            roles.stream()
+                .map(Role::getAuthority)
+                .collect(Collectors.toSet())
+        );
 
         Date now = new Date();
         Date validity = new Date(now.getTime() - validityInMsValue);
@@ -58,5 +67,14 @@ public class JwtTokenProvider {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public String resolveToken(HttpServletRequest req) {
+        String bearerToken = req.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        return null;
     }
 }
